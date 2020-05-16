@@ -23,7 +23,7 @@ class IOCompletionPort {
 
 public:
 	IOCompletionPort();
-	~IOCompletionPort();
+	~IOCompletionPort();	
 
 	int		Initialize();
 	void	StartServer();

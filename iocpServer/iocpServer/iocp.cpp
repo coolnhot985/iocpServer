@@ -54,7 +54,7 @@ int IOCompletionPort::Initialize()
 
 	ret = bind(m_listenSocket, (struct sockaddr*) & serverAddr, sizeof(SOCKADDR_IN));
 	if (ret == SOCKET_ERROR) {
-		printf_s("[ERROR] bind 실패\n");
+		cout << "bind fail\n";
 		closesocket(m_listenSocket);
 		WSACleanup();
 		return false;
@@ -62,7 +62,7 @@ int IOCompletionPort::Initialize()
 
 	ret = listen(m_listenSocket, 5);
 	if (ret == SOCKET_ERROR) {
-		printf_s("[ERROR] listen 실패\n");
+		cout << "listen fail\n";
 		closesocket(m_listenSocket);
 		WSACleanup();
 		return false;
@@ -86,15 +86,16 @@ void IOCompletionPort::StartServer()
 		return;
 	}
 
-	printf_s("[INFO] 서버 시작...\n");
-
 	while (m_bAccept) {
+		cout << "[Info] Wait Conn..\n";
 		clientSocket = WSAAccept(m_listenSocket, (struct sockaddr*) & clientAddr, &addrLen, NULL, NULL);
 
 		if (clientSocket == INVALID_SOCKET) {
-			printf_s("[ERROR] Accept 실패\n");
+			cout << "[Info] Accept fail";
 			return;
 		}
+		
+		cout << "[Info] Accepted\n";
 
 		m_pSocketInfo = new stSOCKETINFO();
 		m_pSocketInfo->socket = clientSocket;
@@ -109,6 +110,8 @@ void IOCompletionPort::StartServer()
 		nResult = WSARecv(m_pSocketInfo->socket, &m_pSocketInfo->dataBuf, 1, &recvBytes,
 			&flags, &(m_pSocketInfo->overlapped), NULL);
 
+		printf("recv data [%s]\n", m_pSocketInfo->dataBuf.buf);
+
 		if (nResult == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING) {
 			printf_s("[ERROR] IO Pending 실패 : %d", WSAGetLastError());
 			return;
@@ -122,7 +125,7 @@ bool IOCompletionPort::CreateWorkerThread()
 	unsigned int threadId;
 	SYSTEM_INFO sysInfo;
 	GetSystemInfo(&sysInfo);
-	printf_s("[INFO] CPU 갯수 : %d\n", sysInfo.dwNumberOfProcessors);
+	printf_s("[System] cpu cnd : %d\n", sysInfo.dwNumberOfProcessors);
 	int nThreadCnt = sysInfo.dwNumberOfProcessors * 2;
 
 	m_pWorkerHandle = new HANDLE[nThreadCnt];
@@ -135,7 +138,7 @@ bool IOCompletionPort::CreateWorkerThread()
 		}
 		ResumeThread(m_pWorkerHandle[i]);
 	}
-	printf_s("[INFO] Worker Thread 시작...\n");
+	printf_s("[System] worker start ...\n");
 	return true;
 }
 
